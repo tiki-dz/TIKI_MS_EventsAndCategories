@@ -1,0 +1,19 @@
+{
+  "name": "tiki_ms_eventsandcategories",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tiki-dz/TIKI_MS_EventsAndCategories.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tiki-dz/TIKI_MS_EventsAndCategories/issues"
+  },
+  "homepage": "https://github.com/tiki-dz/TIKI_MS_EventsAndCategories#readme"
+}
