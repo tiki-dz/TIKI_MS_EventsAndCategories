@@ -1,5 +1,6 @@
 const { validationResult } = require('express-validator')
 const { SubCategory } = require('../models')
+const { Category } = require('../models')
 
 // ***********************************************************
 const getPagingData = (data, page, limit) => {
@@ -24,20 +25,33 @@ async function addSubCategory (req, res) {
   }
   try {
     const data = req.body
+    let category = await Category.findByPk(data.idCategory)
+    if (!category) { res.status(422).send({ success: false, message: 'Category Not found!' }) }
     const subCategory = await SubCategory.findOne({
       where: {
         name: data.name
       }
     })
-    if (!subCategory) {
-      const subCategory = await SubCategory.create({
-        name: data.name,
-        description: data.description,
-        icon: data.icon
-      })
-      return res.status(200).send({ data: subCategory, success: true, message: 'one SubCategory added successfully' })
+    category = await Category.findOne({
+      where: {
+        name: data.name
+      }
+    })
+    if (!subCategory && !category) {
+      const category = Category.findByPk(data.idCategory)
+      if (category) {
+        const subCategory = await SubCategory.create({
+          name: data.name,
+          description: data.description,
+          icon: data.icon,
+          CategoryIdCategory: data.idCategory
+        })
+        return res.status(200).send({ data: subCategory, success: true, message: 'one SubCategory added successfully' })
+      } else {
+        return res.status(422).send({ success: false, message: 'category dont exist' })
+      }
     } else {
-      return res.status(422).send({ success: false, message: 'category name already exist' })
+      return res.status(422).send({ success: false, message: 'subcategory name already exist' })
     }
   } catch (error) {
     console.log(error)
@@ -54,13 +68,38 @@ async function updateSubCategory (req, res) {
 
   try {
     const data = req.body
-    const subCategory = await SubCategory.findByPk(data.idCategory)
-    if (subCategory !== null) {
-      SubCategory.name = (data.name == null) ? SubCategory.name : data.name
-      SubCategory.description = (data.description == null) ? SubCategory.description : data.description
-      SubCategory.icon = (data.icon == null) ? SubCategory.icon : data.icon
-      await SubCategory.save()
-      return res.status(200).send({ data: SubCategory, success: true, message: 'one SubCategory updated successfully' })
+    const subCategory = await SubCategory.findByPk(data.idSubCategory)
+    let subcategorywithsamename = null
+    let category = null
+    if (data.name !== subCategory.name) {
+      subcategorywithsamename = await SubCategory.findOne({
+        where: {
+          name: data.name
+        }
+      })
+    }
+    if (subcategorywithsamename) {
+      return res.status(422).send({ success: false, message: 'subcategory name already exist' })
+    } else {
+      category = await Category.findOne({
+        where: {
+          name: data.name
+        }
+      })
+      if (category) {
+        return res.status(422).send({ success: false, message: 'category name already exist' })
+      }
+    }
+    if (subCategory && !category) {
+      category = await Category.findByPk(data.idCategory)
+      if (category) {
+        subCategory.name = (data.name == null) ? subCategory.name : data.name
+        subCategory.description = (data.description == null) ? subCategory.description : data.description
+        subCategory.icon = (data.icon == null) ? subCategory.icon : data.icon
+        subCategory.CategoryIdCategory = (data.idCategory == null) ? subCategory.CategoryIdCategory : data.idCategory
+        await subCategory.save()
+        return res.status(200).send({ data: subCategory, success: true, message: 'one SubCategory updated successfully' })
+      }
     } else {
       res.status(422).send({ success: false, message: 'Category Not found!' })
     }
@@ -74,6 +113,7 @@ async function getAllSubCategories (req, res) {
     const size = req.query.size
     const { limit, offset } = getPagination(page, size)
     await SubCategory.findAndCountAll({
+      include: [{ model: Category }],
       limit,
       offset
     }).then(data => {
@@ -87,11 +127,16 @@ async function getAllSubCategories (req, res) {
 async function getByIdSubCategories (req, res) {
   try {
     const id = parseInt(req.params.id)
-    const subCategory = await SubCategory.findByPk(id)
+    const subCategory = await SubCategory.findOne({
+      where: {
+        idSubCategory: id
+      },
+      include: [{ model: Category }]
+    })
     if (subCategory !== null) {
       return res.status(200).send({ data: SubCategory, success: true })
     } else {
-      res.status(422).send({ success: false, message: 'Category Not found!' })
+      res.status(422).send({ success: false, message: 'subCategory Not found!' })
     }
   } catch (error) {
     res.status(500).send({ errors: error.toString(), success: false, message: 'processing err' })
