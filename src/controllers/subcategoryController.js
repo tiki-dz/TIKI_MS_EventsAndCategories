@@ -134,7 +134,7 @@ async function getByIdSubCategories (req, res) {
       include: [{ model: Category }]
     })
     if (subCategory !== null) {
-      return res.status(200).send({ data: SubCategory, success: true })
+      return res.status(200).send({ data: subCategory, success: true })
     } else {
       res.status(422).send({ success: false, message: 'subCategory Not found!' })
     }
