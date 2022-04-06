@@ -1,12 +1,13 @@
 const express = require('express')
 const router = express.Router()
-const adminController = require('../controllers/adminController')
+const categoryController = require('../controllers/categoryController')
+const validationAdmin = require('../validation/validationAdmin')
 
-router.post('/category', adminController.addCategory)
-router.patch('/category', adminController.updateCategory)
-router.get('/category', adminController.getAllCategories)
-router.get('/category/id', adminController.getByIdCategories)
-router.get('/category', adminController.getCategoryFiltered) // with filters
-router.delete('/category/id', adminController.deleteCategory)
+router.post('/category', validationAdmin.validate('addCategory'), categoryController.addCategory)
+router.patch('/category', validationAdmin.validate('addCategory'), categoryController.updateCategory)
+router.get('/category', categoryController.getAllCategories)
+router.get('/category/id', categoryController.getByIdCategories)
+router.get('/category', categoryController.getCategoryFiltered) // with filters
+router.delete('/category/id', categoryController.deleteCategory)
 
 module.exports = router
