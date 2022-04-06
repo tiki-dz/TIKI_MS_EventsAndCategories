@@ -1,10 +1,10 @@
-const { validationResult } = require('express-validator/check')
-const { Category } = require('../models/Category')
+const { validationResult } = require('express-validator')
+const { Category } = require('../models')
 
 // ***********************************************************
 const getPagingData = (data, page, limit) => {
   const { count: totalItems, rows: category } = data
-  const currentPage = page ? +page : 0
+  const currentPage = page ? +page : 1
   const totalPages = Math.ceil(totalItems / limit)
   return { totalItems, category, totalPages, currentPage }
 }
@@ -22,16 +22,25 @@ async function addCategory (req, res) {
     res.status(422).json({ errors: errors.array(), success: false, message: 'invalid data' })
     return
   }
-
   try {
     const data = req.body
-    const category = await Category.create({
-      name: data.name,
-      description: data.description,
-      icon: data.icon
+    const category = await Category.findOne({
+      where: {
+        name: data.name
+      }
     })
-    return res.status(200).send({ data: category, success: true, message: 'one category added successfully' })
+    if (!category) {
+      const category = await Category.create({
+        name: data.name,
+        description: data.description,
+        icon: data.icon
+      })
+      return res.status(200).send({ data: category, success: true, message: 'one category added successfully' })
+    } else {
+      return res.status(422).send({ success: false, message: 'category name already exist' })
+    }
   } catch (error) {
+    console.log(error)
     res.status(500).send({ errors: error.toString(), success: false, message: 'processing err' })
   }
 }
@@ -61,7 +70,8 @@ async function updateCategory (req, res) {
 }
 async function getAllCategories (req, res) {
   try {
-    const { page, size } = req.query
+    const page = req.query.page - 1
+    const size = req.query.size
     const { limit, offset } = getPagination(page, size)
     await Category.findAndCountAll({
       limit,
@@ -76,8 +86,8 @@ async function getAllCategories (req, res) {
 }
 async function getByIdCategories (req, res) {
   try {
-    const data = req.param
-    const category = await Category.findByPk(data.id)
+    const id = parseInt(req.params.id)
+    const category = await Category.findByPk(id)
     if (category !== null) {
       return res.status(200).send({ data: category, success: true })
     } else {
@@ -89,8 +99,8 @@ async function getByIdCategories (req, res) {
 }
 async function deleteCategory (req, res) {
   try {
-    const data = req.param
-    const category = await Category.findByPk(data.id)
+    const id = parseInt(req.params.id)
+    const category = await Category.findByPk(id)
     if (category !== null) {
       category.destroy()
       return res.status(200).send({ success: true, message: 'category deleted successfully' })
@@ -101,11 +111,4 @@ async function deleteCategory (req, res) {
     res.status(500).send({ errors: error.toString(), success: false, message: 'processing err' })
   }
 }
-async function getCategoryFiltered (req, res) {
-  try {
-    return res.status(200).send({ data: 'response', success: true })
-  } catch (error) {
-    res.status(500).send({ errors: error.toString(), success: false, message: 'processing err' })
-  }
-}
-module.exports = { addCategory, updateCategory, getAllCategories, getByIdCategories, getCategoryFiltered, deleteCategory }
+module.exports = { addCategory, updateCategory, getAllCategories, getByIdCategories, deleteCategory }
