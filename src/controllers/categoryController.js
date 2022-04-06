@@ -32,7 +32,7 @@ async function addCategory (req, res) {
     })
     return res.status(200).send({ data: category, success: true, message: 'one category added successfully' })
   } catch (error) {
-    res.status(500).send({ errors: error, success: false, message: 'processing err' })
+    res.status(500).send({ errors: error.toString(), success: false, message: 'processing err' })
   }
 }
 async function updateCategory (req, res) {
@@ -56,7 +56,7 @@ async function updateCategory (req, res) {
       res.status(422).send({ success: false, message: 'Category Not found!' })
     }
   } catch (error) {
-    res.status(500).send({ errors: error, success: false, message: 'processing err' })
+    res.status(500).send({ errors: error.toString(), success: false, message: 'processing err' })
   }
 }
 async function getAllCategories (req, res) {
@@ -71,26 +71,26 @@ async function getAllCategories (req, res) {
       return res.status(200).send({ data: response, success: true })
     })
   } catch (error) {
-    res.status(500).send({ errors: error, success: false, message: 'processing err' })
+    res.status(500).send({ errors: error.toString(), success: false, message: 'processing err' })
   }
 }
 async function getByIdCategories (req, res) {
   try {
-    const data = req.body
-    const category = await Category.findByPk(data.idCategory)
+    const data = req.param
+    const category = await Category.findByPk(data.id)
     if (category !== null) {
       return res.status(200).send({ data: category, success: true })
     } else {
       res.status(422).send({ success: false, message: 'Category Not found!' })
     }
   } catch (error) {
-    res.status(500).send({ errors: error, success: false, message: 'processing err' })
+    res.status(500).send({ errors: error.toString(), success: false, message: 'processing err' })
   }
 }
 async function deleteCategory (req, res) {
   try {
-    const data = req.body
-    const category = await Category.findByPk(data.idCategory)
+    const data = req.param
+    const category = await Category.findByPk(data.id)
     if (category !== null) {
       category.destroy()
       return res.status(200).send({ success: true, message: 'category deleted successfully' })
@@ -98,14 +98,14 @@ async function deleteCategory (req, res) {
       res.status(422).send({ success: false, message: 'Category Not found!' })
     }
   } catch (error) {
-    res.status(500).send({ errors: error, success: false, message: 'processing err' })
+    res.status(500).send({ errors: error.toString(), success: false, message: 'processing err' })
   }
 }
 async function getCategoryFiltered (req, res) {
   try {
     return res.status(200).send({ data: 'response', success: true })
   } catch (error) {
-    res.status(500).send({ errors: error, success: false, message: 'processing err' })
+    res.status(500).send({ errors: error.toString(), success: false, message: 'processing err' })
   }
 }
 module.exports = { addCategory, updateCategory, getAllCategories, getByIdCategories, getCategoryFiltered, deleteCategory }

@@ -32,4 +32,4 @@ app.use('/api', indexRouter)
 app.listen(5002)
 
 module.exports = app
-console.log('server start on port 5001')
+console.log('server start on port 5002')
