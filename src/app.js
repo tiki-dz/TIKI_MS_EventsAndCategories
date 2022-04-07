@@ -31,7 +31,7 @@ app.use(
 app.use('/api', indexRouter)
 
 sequelize.query('SET FOREIGN_KEY_CHECKS = 0').then(function () {
-  sequelize.sync({ force: false, alter: false })
+  sequelize.sync({ force: false, alter: true })
 })
 app.use(bodyParser.urlencoded({ extended: true }))
 

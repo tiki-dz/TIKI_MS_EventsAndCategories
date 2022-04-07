@@ -43,5 +43,21 @@ exports.validate = (method) => {
           .isLength({ min: 1 })
       ]
     }
+    case 'addSubCategoryToEvent' : {
+      return [
+        param('id')
+          .isInt(),
+        body('idSubCategory')
+          .isLength({ min: 1 })
+      ]
+    }
+    case 'deleteSubCategory' : {
+      return [
+        param('id')
+          .isInt(),
+        body('idSubCategory')
+          .isLength({ min: 1 })
+      ]
+    }
   }
 }

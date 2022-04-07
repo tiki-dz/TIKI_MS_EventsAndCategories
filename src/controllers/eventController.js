@@ -1,5 +1,5 @@
 const { validationResult } = require('express-validator/check')
-const { SubCategory, Tag, Event } = require('../models')
+const { SubCategory, Tag, Event, sequelize } = require('../models')
 const addEvent = (req, res, next) => {
   try {
     console.log(req.body)
@@ -132,18 +132,14 @@ const addEvent = (req, res, next) => {
   }
 }
 const getAllEvents = (req, res) => {
-  Event.findAll({
-    include: [{
-      model: Tag
-    }, {
-      model: SubCategory
-      // specifies how we want to be able to access our joined rows on the returned data
-    }
-      // specifies how we want to be able to access our joined rows on the returned data
-    ]
-  }).then(events => {
-    return res.send({ data: events, success: true, message: 'all events are here' })
-  })
+  const { page, size } = req.query
+  var condition = null
+  const { limit, offset } = getPagination(page, size)
+  Event.findAndCountAll({ where: condition, limit, offset })
+    .then(data => {
+      const response = getPagingData(data, page, limit)
+      res.send(response)
+    })
 }
 const deleteEvent = (req, res) => {
   const errors = validationResult(req)
@@ -189,7 +185,55 @@ const deleteEvent = (req, res) => {
     })
   }
 }
-const addTagToEvent = (req, res) => {
+const deleteTag = async (req, res) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) {
+    return res.status(422).json({
+      errors: errors.array(),
+      success: false,
+      message: 'invalid data'
+    })
+  }
+  try {
+    const [result] = await sequelize.query('delete from event_has_tag where EventIdEvent = ? and TagName = ?',
+      { replacements: [req.params.id, req.body.name] })
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ errors: ['tags dont exists'], success: false, message: ['tags d"ont exist '] })
+    }
+    return res.status(200).json({ data: null, success: true, message: ['tags delete successfuly'] })
+  } catch (err) {
+    return res.status(500).json({
+      errors: [err],
+      success: false,
+      message: 'process err'
+    })
+  }
+}
+const deleteSubcategory = async (req, res) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) {
+    return res.status(422).json({
+      errors: errors.array(),
+      success: false,
+      message: 'invalid data'
+    })
+  }
+  try {
+    const [result] = await sequelize.query('delete from event_has_subcategory where EventIdEvent = ? and SubCategoryIdSubCategory = ?',
+      { replacements: [req.params.id, req.body.idSubCategory] })
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ errors: ['Subcategory  dont exists'], success: false, message: ['Subcategory  d"ont exist '] })
+    }
+    return res.status(200).json({ data: null, success: true, message: ['Subcategory delete successfuly'] })
+  } catch (err) {
+    return res.status(500).json({
+      errors: [err],
+      success: false,
+      message: 'process err'
+    })
+  }
+}
+const addTagToEvent = async (req, res) => {
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
     return res.status(422).json({
@@ -202,44 +246,34 @@ const addTagToEvent = (req, res) => {
     Event.findOne({
       where: {
         idEvent: req.params.id
-      },
-      include: [{
-        model: Tag
-      }]
-    }).then(event1 => {
-      if (!event1) {
+      }
+    }).then((event) => {
+      if (!event) {
         return res.status(404).json({
           errors: ['event dont exist'],
           success: false,
           message: 'event dont exist'
         })
       }
-      console.log(event1)
-      const find = event1.Tags.find(element => element.name === req.body.name)
-      if (find) {
-        return res.send({ success: false, message: 'tags already exist' })
-      }
-      Event.findOne({
+      Tag.findOrCreate({
         where: {
-          idEvent: req.params.id
+          name: req.body.name
         },
-        include: [{ model: Tag }]
-      }).then((event) => {
-        event.getTags({ where: { name: req.body.name } }).then((tags) => {
-          if (tags) {
-            return res.send({ data: event1, success: false, message: 'tags already exist' })
+        defaults: {
+          name: req.body.name
+        }
+      }).then(async (tag) => {
+        try {
+          const [result, metadata] = await sequelize.query('insert event_has_tag values( ? , ? )',
+            { replacements: [req.params.id, req.body.name] })
+          console.log(metadata)
+          if (result.affectedRows === 0) {
+            return res.status(409).json({ errors: ['tag already exist'], success: false, message: ['tag already exist'] })
           }
-        })
-        Tag.findOrCreate({
-          where: { name: req.body.name },
-          defaults: {
-            name: req.body.name
-          }
-        }).then((tag) => {
-          event1.addTags(tag).then((event) => {
-            return res.send({ data: event1, success: true, message: 'event add success' })
-          })
-        })
+          return res.status(200).json({ data: null, success: true, message: ['Tag added successfuly'] })
+        } catch (err) {
+          return res.status(409).json({ errors: ['tag already exist'], success: false, message: ['tag already exist'] })
+        }
       })
     })
   } catch (err) {
@@ -250,4 +284,66 @@ const addTagToEvent = (req, res) => {
     })
   }
 }
-module.exports = { addEvent, getAllEvents, deleteEvent, addTagToEvent }
+const addSubCategory = async (req, res) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) {
+    return res.status(422).json({
+      errors: errors.array(),
+      success: false,
+      message: 'invalid data'
+    })
+  }
+  try {
+    Event.findOne({
+      where: {
+        idEvent: req.params.id
+      }
+    }).then((event) => {
+      if (!event) {
+        return res.status(404).json({
+          errors: ['event dont exist'],
+          success: false,
+          message: 'event dont exist'
+        })
+      }
+      SubCategory.findOne({
+        where: {
+          idSubCategory: req.body.idSubCategory
+        }
+      }).then(async (subCategory) => {
+        if (!subCategory) {
+          return res.status(404).json({ data: null, success: true, message: ['SubCategory not found'] })
+        }
+        try {
+          const [result, metadata] = await sequelize.query('insert event_has_subcategory values( ? , ? )',
+            { replacements: [req.params.id, req.body.idSubCategory] })
+          console.log(metadata)
+          if (result.affectedRows === 0) {
+            return res.status(409).json({ errors: ['subCategory already exist'], success: false, message: ['subCategory already exist'] })
+          }
+          return res.status(200).json({ data: null, success: true, message: ['Tag added successfuly'] })
+        } catch (err) {
+          return res.status(409).json({ errors: ['subCategory  alredy exist '], success: false, message: ['subCategory already exist'] })
+        }
+      })
+    })
+  } catch (err) {
+    return res.status(500).json({
+      errors: [err],
+      success: false,
+      message: 'process err'
+    })
+  }
+}
+const getPagingData = (data, page, limit) => {
+  const { count: totalItems, rows: events } = data
+  const currentPage = page ? +page : 0
+  const totalPages = Math.ceil(totalItems / limit)
+  return { totalItems, events, totalPages, currentPage }
+}
+const getPagination = (page, size) => {
+  const limit = size ? +size : 3
+  const offset = page ? page * limit : 0
+  return { limit, offset }
+}
+module.exports = { addEvent, getAllEvents, deleteEvent, deleteTag, deleteSubcategory, addTagToEvent, addSubCategory }

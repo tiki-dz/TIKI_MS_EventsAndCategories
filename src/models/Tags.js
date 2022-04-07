@@ -10,7 +10,8 @@ module.exports = (sequelize, DataTypes) => {
     classMethods: {
       associate: function (models) {
         tag.belongsToMany(models.Event, {
-          through: 'event_has_tag'
+          through: 'event_has_tag',
+          timestamps: false
         })
       }
     }
