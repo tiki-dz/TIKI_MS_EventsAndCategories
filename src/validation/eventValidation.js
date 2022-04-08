@@ -59,5 +59,12 @@ exports.validate = (method) => {
           .isLength({ min: 1 })
       ]
     }
+    case 'updateImage' : {
+      return [
+        param('id')
+          .isInt(),
+        body('imageType').isIn(['ticketImage', 'outherImage', 'eventImage'])
+      ]
+    }
   }
 }

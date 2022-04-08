@@ -11,4 +11,5 @@ router.post('/event/:id/subcategory', validation.validate('addSubCategoryToEvent
 router.delete('/event/:id/tag', validation.validate('addTagToEvent'), eventController.deleteTag)
 router.delete('/event/:id/subcategory', validation.validate('deleteSubCategory'), eventController.deleteSubcategory)
 router.patch('/event/:id', validation.validate('deleteEvent'), eventController.patchEvent)
+router.put('/event/:id/updateImage', validation.validate('updateImage'), eventController.updateImageTicket)
 module.exports = router

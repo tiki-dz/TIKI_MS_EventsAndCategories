@@ -1,6 +1,9 @@
+/* eslint-disable prefer-const */
 const { validationResult } = require('express-validator/check')
 const { SubCategory, Tag, Event, sequelize, Category } = require('../models')
 const Op = require('Sequelize').Op
+const fs = require('fs')
+
 const addEvent = (req, res, next) => {
   try {
     console.log(req.body)
@@ -76,9 +79,9 @@ const addEvent = (req, res, next) => {
         }
       })
       addTagsPromisses.then(function (value) {
-        const urlOutherImage = '/Upload/outherImage' + Date.now().toString().trim() + req.files.outherImage.name.trim()
-        const urlTicketImage = '/Upload/ticketImage' + Date.now().toString().trim() + req.files.ticketImage.name.trim()
-        const urlEventImage = '/Upload/eventImage' + Date.now().toString().trim() + req.files.eventImage.name.trim()
+        const urlOutherImage = '/Upload/outherImage/' + Date.now().toString().trim() + req.files.outherImage.name.trim()
+        const urlTicketImage = '/Upload/ticketImage/' + Date.now().toString().trim() + req.files.ticketImage.name.trim()
+        const urlEventImage = '/Upload/eventImage/' + Date.now().toString().trim() + req.files.eventImage.name.trim()
         req.files.outherImage.mv(
           '.' + urlOutherImage
         )
@@ -197,6 +200,129 @@ const deleteEvent = (req, res) => {
       event1.destroy().then((event) => {
         return res.send({ success: true, message: 'event added success', data: event })
       })
+    })
+  } catch (err) {
+    return res.status(500).json({
+      errors: [err],
+      success: false,
+      message: 'process err'
+    })
+  }
+}
+const updateImageTicket = (req, res) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) {
+    return res.status(422).json({
+      errors: errors.array(),
+      success: false,
+      message: 'invalid data'
+    })
+  }
+  if (req.files == null) {
+    return res.status(422).json({
+      errors: ['all files are required'],
+      success: false,
+      message: 'all files are required'
+    })
+  }
+  if (!req.files.image) {
+    return res.status(422).json({
+      errors: ['All files are required'],
+      success: false,
+      message: 'All files are required'
+    })
+  }
+  try {
+    Event.findOne({
+      where: {
+        idEvent: req.params.id
+      },
+      include: [{
+        model: Tag
+      }, {
+        model: SubCategory
+        // specifies how we want to be able to access our joined rows on the returned data
+      }
+        // specifies how we want to be able to access our joined rows on the returned data
+      ]
+    }).then(event1 => {
+      if (!event1) {
+        return res.status(404).json({
+          errors: ['event dont exist'],
+          success: false,
+          message: 'event dont exist'
+        })
+      }
+      if (req.body.imageType === 'outherImage') {
+        const imageUrl = event1.outherImage
+        try {
+          fs.unlinkSync('./Upload' + imageUrl.split('/Upload')[1])
+          const url = '/Upload/outherImage/' + Date.now().toString().trim() + req.files.image.name.trim()
+          req.files.image.mv(
+            '.' + url
+          )
+          event1.outherImage = 'http://localhost:5002' + url
+          event1.save().then((event1) => {
+            return res.status(500).json({
+              message: 'update successfully',
+              success: true,
+              data: event1
+            })
+          })
+        } catch (err) {
+          return res.status(500).json({
+            errors: [err],
+            success: false,
+            message: 'process err'
+          })
+        }
+      } else if (req.body.imageType === 'ticketImage') {
+        const imageUrl = event1.ticketImage
+        try {
+          fs.unlinkSync('./Upload' + imageUrl.split('/Upload')[1])
+          const url = '/Upload/ticketImage/' + Date.now().toString().trim() + req.files.image.name.trim()
+          req.files.image.mv(
+            '.' + url
+          )
+          event1.ticketImage = 'http://localhost:5002' + url
+          event1.save().then((event1) => {
+            return res.status(500).json({
+              message: 'update successfully',
+              success: true,
+              data: event1
+            })
+          })
+        } catch (err) {
+          return res.status(500).json({
+            errors: [err],
+            success: false,
+            message: 'process err'
+          })
+        }
+      } else {
+        const imageUrl = event1.eventImage
+        try {
+          fs.unlinkSync('./Upload' + imageUrl.split('/Upload')[1])
+          const url = '/Upload/eventImage/' + Date.now().toString().trim() + req.files.image.name.trim()
+          req.files.image.mv(
+            '.' + url
+          )
+          event1.eventImage = 'http://localhost:5002' + url
+          event1.save().then((event1) => {
+            return res.status(500).json({
+              message: 'update successfully',
+              success: true,
+              data: event1
+            })
+          })
+        } catch (err) {
+          return res.status(500).json({
+            errors: [err],
+            success: false,
+            message: 'process err'
+          })
+        }
+      }
     })
   } catch (err) {
     return res.status(500).json({
@@ -408,5 +534,4 @@ const getPagination = (page, size) => {
   const offset = page ? page * limit : 0
   return { limit, offset }
 }
-
-module.exports = { addEvent, getAllEvents, deleteEvent, deleteTag, deleteSubcategory, addTagToEvent, addSubCategory, patchEvent }
+module.exports = { addEvent, getAllEvents, deleteEvent, deleteTag, deleteSubcategory, addTagToEvent, addSubCategory, patchEvent, updateImageTicket }
