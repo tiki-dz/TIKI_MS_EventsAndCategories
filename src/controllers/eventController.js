@@ -7,10 +7,13 @@ const fs = require('fs')
 const addEvent = (req, res, next) => {
   try {
     console.log(req.body)
-    console.log(req.fields)
-    const tags = req.body.tags ?? []
-    const subcategories = req.body.subCategory ?? []
+    console.log(req.files)
+    const tags = JSON.parse(req.body.tags) ?? []
+    const subcategories = JSON.parse(req.body.subCategory) ?? []
+    console.log(tags)
+    console.log(subcategories)
     if (!Array.isArray(tags) || !Array.isArray(subcategories)) {
+      console.log('here')
       return res.status(422).json({
         errors: ['array format for tags and subcategories are required'],
         success: false,

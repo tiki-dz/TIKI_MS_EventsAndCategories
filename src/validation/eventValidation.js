@@ -24,8 +24,6 @@ exports.validate = (method) => {
           .isLength({ min: 3 }),
 
         body('ticketNb')
-          .isInt({ min: 1 }),
-        body('subCategory')
           .isInt({ min: 1 })
       ]
     };
