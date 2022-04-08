@@ -142,6 +142,29 @@ async function getByIdSubCategories (req, res) {
     res.status(500).send({ errors: error.toString(), success: false, message: 'processing err' })
   }
 }
+async function getSubCategoriesByIdCategories (req, res) {
+  try {
+    const idCategory = parseInt(req.params.id)
+    const category = await Category.findByPk(idCategory)
+    if (category) {
+      const subCategory = await SubCategory.findAndCountAll({
+        where: {
+          CategoryIdCategory: idCategory
+        },
+        include: [{ model: Category }]
+      })
+      if (subCategory !== null) {
+        return res.status(200).send({ data: subCategory, success: true })
+      } else {
+        res.status(422).send({ success: false, message: 'subCategory Not found!' })
+      }
+    } else {
+      res.status(422).send({ success: false, message: 'Category Not found!' })
+    }
+  } catch (error) {
+    res.status(500).send({ errors: error.toString(), success: false, message: 'processing err' })
+  }
+}
 async function deleteSubCategory (req, res) {
   try {
     const id = parseInt(req.params.id)
@@ -156,4 +179,4 @@ async function deleteSubCategory (req, res) {
     res.status(500).send({ errors: error.toString(), success: false, message: 'processing err' })
   }
 }
-module.exports = { addSubCategory, updateSubCategory, getAllSubCategories, getByIdSubCategories, deleteSubCategory }
+module.exports = { addSubCategory, updateSubCategory, getAllSubCategories, getByIdSubCategories, getSubCategoriesByIdCategories, deleteSubCategory }

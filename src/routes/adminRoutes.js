@@ -10,6 +10,7 @@ router.post('/category', validationAdmin.validate('addCategory'), categoryContro
 router.patch('/subCategory', validationAdmin.validate('addSubCategory'), subCategoryController.updateSubCategory)
 router.get('/subCategory', subCategoryController.getAllSubCategories)
 router.get('/subCategory/:id', subCategoryController.getByIdSubCategories)
+router.get('/subCategory/Category/:id', subCategoryController.getSubCategoriesByIdCategories)
 router.delete('/subCategory/:id', subCategoryController.deleteSubCategory)
 router.patch('/category', validationAdmin.validate('addCategory'), categoryController.updateCategory)
 router.get('/category', categoryController.getAllCategories)
