@@ -33,12 +33,11 @@ app.use('/api', indexRouter)
 sequelize.query('SET FOREIGN_KEY_CHECKS = 0').then(function () {
   sequelize.sync({ force: false, alter: true })
 })
+
 app.use(bodyParser.urlencoded({ extended: true }))
 
 // parse application/json
 app.use(bodyParser.json())
-
 app.listen(5002)
-
 module.exports = app
 console.log('server start on port 5001')

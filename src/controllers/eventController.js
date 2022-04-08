@@ -1,5 +1,6 @@
 const { validationResult } = require('express-validator/check')
-const { SubCategory, Tag, Event, sequelize } = require('../models')
+const { SubCategory, Tag, Event, sequelize, Category } = require('../models')
+const Op = require('Sequelize').Op
 const addEvent = (req, res, next) => {
   try {
     console.log(req.body)
@@ -132,13 +133,33 @@ const addEvent = (req, res, next) => {
   }
 }
 const getAllEvents = (req, res) => {
-  const { page, size } = req.query
-  var condition = null
+  const { page, size, search, tag, category } = req.query
+  const condition = !search ? null : { [Op.or]: [{ name: { [Op.like]: `%${search}%` } }, { description: { [Op.like]: `%${search}%` } }, { organiser: { [Op.like]: `%${search}%` } }] }
+  const conditionTag = !tag ? null : { tagName: { [Op.like]: `%${tag}%` } }
+  const conditionCategory = !category ? null : { name: { [Op.like]: `%${category}%` } }
   const { limit, offset } = getPagination(page, size)
-  Event.findAndCountAll({ where: condition, limit, offset })
+  Event.findAndCountAll({
+    where: condition,
+    limit,
+    offset,
+    include: [{
+      model: Tag,
+      required: true,
+      through: {
+        where: conditionTag
+      }
+    },
+    {
+      model: SubCategory,
+      include: [{
+        model: Category,
+        where: conditionCategory
+      }]
+    }]
+  })
     .then(data => {
       const response = getPagingData(data, page, limit)
-      res.send(response)
+      res.send({ ...response, success: true })
     })
 }
 const deleteEvent = (req, res) => {
@@ -335,6 +356,47 @@ const addSubCategory = async (req, res) => {
     })
   }
 }
+const patchEvent = async (req, res) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) {
+    return res.status(422).json({
+      errors: errors.array(),
+      success: false,
+      message: 'invalid data'
+    })
+  }
+  try {
+    Event.findOne({
+      where: {
+        idEvent: req.params.id
+      }
+    }).then(event1 => {
+      if (!event1) {
+        return res.status(404).json({
+          errors: ['event dont exist'],
+          success: false,
+          message: 'event dont exist'
+        })
+      }
+      event1.name = req.body.name ?? event1.name
+      event1.description = req.body.description ?? event1.description
+      event1.organiser = req.body.organiser ?? event1.organiser
+      event1.startDate = req.body.startDate ?? event1.startDate
+      event1.endDate = req.body.endDate ?? event1.endDate
+      event1.address = req.body.name ?? event1.address
+      event1.externalUrls = req.body.externalUrls ?? event1.externalUrls
+      event1.ticketNb = req.body.ticketNb ?? event1.ticketNb
+      event1.save().then((event) => {
+        return res.status(200).json({
+          data: event,
+          success: true,
+          message: 'event updated successfully'
+        })
+      })
+    })
+  } catch (err) {
+  }
+}
 const getPagingData = (data, page, limit) => {
   const { count: totalItems, rows: events } = data
   const currentPage = page ? +page : 0
@@ -346,4 +408,5 @@ const getPagination = (page, size) => {
   const offset = page ? page * limit : 0
   return { limit, offset }
 }
-module.exports = { addEvent, getAllEvents, deleteEvent, deleteTag, deleteSubcategory, addTagToEvent, addSubCategory }
+
+module.exports = { addEvent, getAllEvents, deleteEvent, deleteTag, deleteSubcategory, addTagToEvent, addSubCategory, patchEvent }

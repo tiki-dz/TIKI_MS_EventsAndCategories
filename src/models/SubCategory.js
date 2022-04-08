@@ -20,6 +20,8 @@ module.exports = (sequelize, DataTypes) => {
     }
 
   }, {
+    timestamps: true,
+
     classMethods: {
       associate: function (models) {
         subCategory.belongsTo(models.Category)
@@ -29,6 +31,7 @@ module.exports = (sequelize, DataTypes) => {
         })
       }
     }
+
   })
   // other.associate = (models) => {
 

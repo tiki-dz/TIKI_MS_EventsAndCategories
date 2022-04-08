@@ -16,6 +16,7 @@ module.exports = (sequelize, DataTypes) => {
     }
 
   }, {
+    timestamps: true,
     classMethods: {
       associate: function (models) {
         manipulation.belongsTo(models.Event, {
