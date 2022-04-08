@@ -1,9 +1,9 @@
 {
-  "name": "tiki",
+  "name": "tiki_events_category",
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./src/app.js",
+    "start": "nodemon src/app.js --exec  \"npm run lint && node\"",
     "lint": "eslint src/**/*.js"
   },
   "dependencies": {

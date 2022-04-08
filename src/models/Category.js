@@ -1,3 +1,4 @@
+// const { SubCategory } = require('./SubCategory')
 
 module.exports = (sequelize, DataTypes) => {
   const category = sequelize.define('Category', {
@@ -21,6 +22,9 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     classMethods: {
       associate: function (models) {
+        // category.belongsToMany(models.SubCategory, {
+        //   through: 'SubCategory_has_Category'
+        // })
       }
     }
   })

@@ -1,4 +1,4 @@
-const { sequelize } = require('./models')
+// const { sequelize } = require('./models')
 // const createError = require("http-errors")
 const express = require('express')
 const path = require('path')
@@ -30,9 +30,9 @@ app.use(
 )
 app.use('/api', indexRouter)
 
-sequelize.query('SET FOREIGN_KEY_CHECKS = 0').then(function () {
-  sequelize.sync({ force: false, alter: true })
-})
+// sequelize.query('SET FOREIGN_KEY_CHECKS = 0').then(function () {
+//   sequelize.sync({ force: false, alter: true })
+// })
 
 app.use(bodyParser.urlencoded({ extended: true }))
 
@@ -40,4 +40,4 @@ app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 app.listen(5002)
 module.exports = app
-console.log('server start on port 5001')
+console.log('server start on port 5002')
