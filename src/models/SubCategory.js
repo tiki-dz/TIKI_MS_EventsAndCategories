@@ -20,14 +20,18 @@ module.exports = (sequelize, DataTypes) => {
     }
 
   }, {
+    timestamps: true,
+
     classMethods: {
       associate: function (models) {
         subCategory.belongsTo(models.Category)
         subCategory.belongsToMany(models.Event, {
-          through: 'event_has_subCategory'
+          through: 'event_has_subCategory',
+          timestamps: false
         })
       }
     }
+
   })
   // other.associate = (models) => {
 

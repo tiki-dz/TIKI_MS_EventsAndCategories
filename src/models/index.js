@@ -11,7 +11,10 @@ const sequelize = new Sequelize(
     dialect: config.db.dialect,
     host: config.db.host,
     port: config.db.port,
-    logging: true
+    logging: true,
+    define: {
+      timestamps: true// I don't want timestamp fields by default
+    }
   }
 )
 try {
