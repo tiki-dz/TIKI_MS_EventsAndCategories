@@ -81,10 +81,11 @@ const addEvent = (req, res, next) => {
           })
         }
       })
+
       addTagsPromisses.then(function (value) {
-        const urlOutherImage = '/Upload/outherImage/' + Date.now().toString().trim() + req.files.outherImage.name.trim()
-        const urlTicketImage = '/Upload/ticketImage/' + Date.now().toString().trim() + req.files.ticketImage.name.trim()
-        const urlEventImage = '/Upload/eventImage/' + Date.now().toString().trim() + req.files.eventImage.name.trim()
+        const urlOutherImage = '/Upload/outherImage/' + Date.now().toString().trim() + '1.' + req.files.outherImage.mimetype.split('/')[1]
+        const urlTicketImage = '/Upload/ticketImage/' + Date.now().toString().trim() + '2.' + req.files.ticketImage.mimetype.split('/')[1]
+        const urlEventImage = '/Upload/eventImage/' + Date.now().toString().trim() + '3.' + req.files.eventImage.mimetype.split('/')[1]
         req.files.outherImage.mv(
           '.' + urlOutherImage
         )
@@ -260,7 +261,7 @@ const updateImageTicket = (req, res) => {
         const imageUrl = event1.outherImage
         try {
           fs.unlinkSync('./Upload' + imageUrl.split('/Upload')[1])
-          const url = '/Upload/outherImage/' + Date.now().toString().trim() + req.files.image.name.trim()
+          const url = '/Upload/outherImage/' + Date.now().toString().trim() + '.' + req.files.image.mimetype.split('/')[1]
           req.files.image.mv(
             '.' + url
           )
@@ -283,7 +284,7 @@ const updateImageTicket = (req, res) => {
         const imageUrl = event1.ticketImage
         try {
           fs.unlinkSync('./Upload' + imageUrl.split('/Upload')[1])
-          const url = '/Upload/ticketImage/' + Date.now().toString().trim() + req.files.image.name.trim()
+          const url = '/Upload/ticketImage/' + Date.now().toString().trim() + '.' + req.files.image.mimetype.split('/')[1]
           req.files.image.mv(
             '.' + url
           )
@@ -306,7 +307,7 @@ const updateImageTicket = (req, res) => {
         const imageUrl = event1.eventImage
         try {
           fs.unlinkSync('./Upload' + imageUrl.split('/Upload')[1])
-          const url = '/Upload/eventImage/' + Date.now().toString().trim() + req.files.image.name.trim()
+          const url = '/Upload/eventImage/' + Date.now().toString().trim() + '.' + req.files.image.mimetype.split('/')[1]
           req.files.image.mv(
             '.' + url
           )

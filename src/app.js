@@ -15,21 +15,26 @@ const app = express()
 // view engine setup
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'ejs')
-
 app.use(logger('dev'))
-app.use(express.static('Upload'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
-app.use(express.static(path.join(__dirname, 'public')))
-const bodyParser = require('body-parser')
+app.use('Upload', express.static(__dirname))
 app.use(
   fileUpload({
-    createParentPath: true
+    createParentPath: true,
+    safeFileNames: true
   })
 )
+app.use(express.static('Upload'))
+const bodyParser = require('body-parser')
 app.use('/api', indexRouter)
-
+app.get('/Upload/*:filename*', (req, res) => {
+  console.log(__dirname)
+  res.sendFile(
+    path.join(__dirname, '../Upload', req.path.substring(8, req.path.length))
+  )
+})
 // sequelize.query('SET FOREIGN_KEY_CHECKS = 0').then(function () {
 //   sequelize.sync({ force: false, alter: true })
 // })
