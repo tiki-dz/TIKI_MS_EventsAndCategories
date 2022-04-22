@@ -1,3 +1,4 @@
+const { default: axios } = require('axios')
 const { validationResult } = require('express-validator')
 const { Category } = require('../models')
 
@@ -54,15 +55,30 @@ async function updateCategory (req, res) {
 
   try {
     const data = req.body
-    const category = await Category.findByPk(data.idCategory)
-    if (category !== null) {
-      category.name = (data.name == null) ? category.name : data.name
-      category.description = (data.description == null) ? category.description : data.description
-      category.icon = (data.icon == null) ? category.icon : data.icon
-      await category.save()
-      return res.status(200).send({ data: category, success: true, message: 'one category updated successfully' })
+    const token = req.headers['x-access-token']
+
+    const response = await axios.get('http://localhost:5001/api/tokenCheck', {
+      headers: {
+        'x-access-token': token,
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Headers': 'x-access-token'
+      }
+    })
+    console.log(response.data.success)
+    if (response.data.success) {
+      const category = await Category.findByPk(data.idCategory)
+      if (category !== null) {
+        category.name = (data.name == null) ? category.name : data.name
+        category.description = (data.description == null) ? category.description : data.description
+        category.icon = (data.icon == null) ? category.icon : data.icon
+        await category.save()
+        return res.status(200).send({ data: category, success: true, message: 'one category updated successfully' })
+      } else {
+        res.status(422).send({ success: false, message: 'Category Not found!' })
+      }
     } else {
-      res.status(422).send({ success: false, message: 'Category Not found!' })
+      res.status(500).send(response)
+      console.log(response)
     }
   } catch (error) {
     res.status(500).send({ errors: error.toString(), success: false, message: 'processing err' })
@@ -99,6 +115,15 @@ async function getByIdCategories (req, res) {
 }
 async function deleteCategory (req, res) {
   try {
+    const token = req.headers['x-access-token']
+    const response = await axios.get('http://localhost:5001/api/tokenCheck', {
+      headers: {
+        'x-access-token': token,
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Headers': 'x-access-token'
+      }
+    })
+    if (response.data.success) { console.log(response) } else { res.status(500).send(response) }
     const id = parseInt(req.params.id)
     const category = await Category.findByPk(id)
     if (category !== null) {
