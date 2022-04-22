@@ -387,6 +387,7 @@ const deleteSubcategory = async (req, res) => {
   }
 }
 const addTagToEvent = async (req, res) => {
+  console.log(req.body)
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
     return res.status(422).json({
@@ -416,16 +417,17 @@ const addTagToEvent = async (req, res) => {
           name: req.body.name
         }
       }).then(async (tag) => {
+        const [object, created] = tag
+        console.log(created)
         try {
-          const [result, metadata] = await sequelize.query('insert event_has_tag values( ? , ? )',
-            { replacements: [req.params.id, req.body.name] })
-          console.log(metadata)
-          if (result.affectedRows === 0) {
-            return res.status(409).json({ errors: ['tag already exist'], success: false, message: ['tag already exist'] })
-          }
-          return res.status(200).json({ data: null, success: true, message: ['Tag added successfuly'] })
+          event.addTag(object).then((event) => {
+            if (!event) {
+              return res.status(409).json({ message: 'tag already exist', success: false, data: event })
+            }
+            return res.status(200).json({ message: 'tag added successfully', success: true, data: event })
+          })
         } catch (err) {
-          return res.status(409).json({ errors: ['tag already exist'], success: false, message: ['tag already exist'] })
+          return res.status(409).json({ errors: [err], success: false, message: ['tag already exist'] })
         }
       })
     })
