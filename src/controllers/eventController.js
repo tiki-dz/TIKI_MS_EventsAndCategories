@@ -294,7 +294,7 @@ const updateImageTicket = (req, res) => {
           )
           event1.ticketImage = 'http://localhost:5002' + url
           event1.save().then((event1) => {
-            return res.status(500).json({
+            return res.status(200).json({
               message: 'update successfully',
               success: true,
               data: event1
