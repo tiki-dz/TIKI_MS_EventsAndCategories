@@ -4,6 +4,8 @@ exports.validate = (method) => {
     // eslint-disable-next-line no-lone-blocks
     case 'addEvent': {
       return [
+        body('justForWomen').isBoolean(),
+        body('price').isNumeric(),
         body('name')
           .matches(/^[A-Za-z\s]+$/)
           .withMessage('Name must be alphabetic.')

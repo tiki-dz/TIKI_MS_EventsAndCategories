@@ -7,7 +7,7 @@ const subCategoryController = require('../controllers/subcategoryController')
 const validationAdmin = require('../validation/validationAdmin')
 
 router.post('/event', validation.validate('addEvent'), eventController.addEvent)
-router.get('/event', validation.validate('addEvent'), eventController.getAllEvents)
+router.get('/event', eventController.getAllEvents)
 router.delete('/event/:id', validation.validate('deleteEvent'), eventController.deleteEvent)
 router.post('/event/:id/tag', validation.validate('addTagToEvent'), eventController.addTagToEvent)
 router.post('/event/:id/subcategory', validation.validate('addSubCategoryToEvent'), eventController.addSubCategory)
