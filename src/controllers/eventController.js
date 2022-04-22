@@ -141,19 +141,20 @@ const addEvent = (req, res, next) => {
     })
   }
 }
-const getAllEvents = (req, res) => {
+const getAllEvents = async (req, res) => {
   const { page, size, search, tag, category } = req.query
   const condition = !search ? null : { [Op.or]: [{ name: { [Op.like]: `%${search}%` } }, { description: { [Op.like]: `%${search}%` } }, { organiser: { [Op.like]: `%${search}%` } }] }
   const conditionTag = !tag ? null : { tagName: { [Op.like]: `%${tag}%` } }
   const conditionCategory = !category ? null : { name: { [Op.like]: `%${category}%` } }
   const { limit, offset } = getPagination(page, size)
+
+  const total = await Event.count({ where: condition, limit: limit, offset: offset })
   Event.findAndCountAll({
     where: condition,
     limit,
     offset,
     include: [{
       model: Tag,
-      required: true,
       through: {
         where: conditionTag
       }
@@ -167,6 +168,7 @@ const getAllEvents = (req, res) => {
     }]
   })
     .then(data => {
+      data.count = total
       const response = getPagingData(data, page, limit)
       res.send({ ...response, success: true })
     })
@@ -536,8 +538,10 @@ const patchEvent = async (req, res) => {
 const getPagingData = (data, page, limit) => {
   const { count: totalItems, rows: events } = data
   const currentPage = page ? +page : 0
-  const totalPages = Math.ceil(totalItems / limit)
-  return { totalItems, events, totalPages, currentPage }
+  const totalPagesFalse = Math.ceil(totalItems / limit)
+  console.log(Math.ceil(totalItems / limit))
+  const totalpages = totalPagesFalse === 0 ? totalPagesFalse : totalPagesFalse
+  return { totalItems, events, totalpages, currentPage }
 }
 const getPagination = (page, size) => {
   const limit = size ? +size : 3
