@@ -49,8 +49,15 @@ module.exports = (sequelize, DataTypes) => {
     ticketNb: {
       type: DataTypes.INTEGER,
       allowNull: false
+    },
+    price: {
+      type: DataTypes.DOUBLE(11, 0)
+    },
+    justForWomen: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
     }
-
+    // DOUBLE(11,10)
   }, {
     classMethods: {
       associate: function (models) {

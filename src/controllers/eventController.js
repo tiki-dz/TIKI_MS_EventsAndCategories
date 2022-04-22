@@ -3,7 +3,6 @@ const { validationResult } = require('express-validator/check')
 const { SubCategory, Tag, Event, sequelize, Category } = require('../models')
 const Op = require('Sequelize').Op
 const fs = require('fs')
-
 const addEvent = (req, res, next) => {
   try {
     console.log(req.body)
@@ -43,6 +42,7 @@ const addEvent = (req, res, next) => {
       })
     }
     // check if subCategory exist
+    console.log(subcategories)
     const checkSubCategoryPromisses = new Promise(function (resolve, reject) {
       for (let i = 0; i < subcategories.length; i++) {
         SubCategory.findOne({
@@ -102,6 +102,8 @@ const addEvent = (req, res, next) => {
           startDate: req.body.startDate,
           endDate: req.body.endDate,
           address: req.body.address,
+          price: req.body.price,
+          justForWomen: req.body.justForWomen,
           eventImage: 'http://localhost:5002' + urlEventImage,
           ticketImage: 'http://localhost:5002' + urlTicketImage,
           outherImage: 'http://localhost:5002' + urlOutherImage,
@@ -516,6 +518,8 @@ const patchEvent = async (req, res) => {
       event1.address = req.body.name ?? event1.address
       event1.externalUrls = req.body.externalUrls ?? event1.externalUrls
       event1.ticketNb = req.body.ticketNb ?? event1.ticketNb
+      event1.price = req.body.price ?? event1.price
+      event1.justForWomen = req.body.justForWomen ?? event1.justForWomen
       event1.save().then((event) => {
         return res.status(200).json({
           data: event,
