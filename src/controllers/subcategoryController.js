@@ -1,7 +1,9 @@
 const { default: axios } = require('axios')
 const { validationResult } = require('express-validator')
 const { SubCategory } = require('../models')
+const { sequelize } = require('../models')
 const { Category } = require('../models')
+const { QueryTypes } = require('sequelize')
 
 // ***********************************************************
 const getPagingData = (data, page, limit) => {
@@ -186,15 +188,23 @@ async function deleteSubCategory (req, res) {
         'Access-Control-Allow-Headers': 'x-access-token'
       }
     })
-    if (response.data.success) { console.log(response) } else { res.status(500).send(response) }
-    const id = parseInt(req.params.id)
-    const subCategory = await SubCategory.findByPk(id)
-    if (subCategory !== null) {
-      SubCategory.destroy()
-      return res.status(200).send({ success: true, message: 'category deleted successfully' })
-    } else {
-      res.status(422).send({ success: false, message: 'Category Not found!' })
-    }
+    if (response.data.success) {
+      const id = parseInt(req.params.id)
+      const subCategory = await SubCategory.findByPk(id)
+      if (subCategory !== null) {
+        const events = await sequelize.query('SELECT * FROM tiki.event_has_subcategory;', { type: QueryTypes.SELECT })
+        for (let index = 0; index < events.length; index++) {
+          const element = events[index]
+          if (element.SubCategoryIdSubCategory === id) {
+            return res.status(500).send({ success: false, message: 'subCategory is not Empty!' })
+          }
+        }
+        // SubCategory.destroy()
+        return res.status(200).send({ success: true, message: 'category deleted successfully' })
+      } else {
+        res.status(422).send({ success: false, message: 'Category Not found!' })
+      }
+    } else { res.status(500).send(response) }
   } catch (error) {
     res.status(500).send({ errors: error.toString(), success: false, message: 'processing err' })
   }

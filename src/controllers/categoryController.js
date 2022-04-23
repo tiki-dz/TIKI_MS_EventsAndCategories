@@ -1,6 +1,6 @@
 const { default: axios } = require('axios')
 const { validationResult } = require('express-validator')
-const { Category } = require('../models')
+const { Category, SubCategory } = require('../models')
 
 // ***********************************************************
 const getPagingData = (data, page, limit) => {
@@ -123,15 +123,27 @@ async function deleteCategory (req, res) {
         'Access-Control-Allow-Headers': 'x-access-token'
       }
     })
-    if (response.data.success) { console.log(response) } else { res.status(500).send(response) }
-    const id = parseInt(req.params.id)
-    const category = await Category.findByPk(id)
-    if (category !== null) {
-      category.destroy()
-      return res.status(200).send({ success: true, message: 'category deleted successfully' })
-    } else {
-      res.status(422).send({ success: false, message: 'Category Not found!' })
-    }
+    if (response.data.success) {
+      const id = parseInt(req.params.id)
+      const category = await Category.findByPk(id)
+      if (category !== null) {
+        // test if the category is empty
+        const subcategory = await SubCategory.findOne({
+          where: {
+            CategoryIdCategory: id
+          }
+        })
+        if (!subcategory) {
+          // destroy the category
+          category.destroy()
+          return res.status(200).send({ success: true, message: 'category deleted successfully' })
+        } else {
+          res.status(422).send({ success: false, message: 'Category is not empty!' })
+        }
+      } else {
+        res.status(422).send({ success: false, message: 'Category Not found!' })
+      }
+    } else { res.status(500).send(response) }
   } catch (error) {
     res.status(500).send({ errors: error.toString(), success: false, message: 'processing err' })
   }
