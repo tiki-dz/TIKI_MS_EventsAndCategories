@@ -472,15 +472,14 @@ const addSubCategory = async (req, res) => {
           return res.status(404).json({ data: null, success: true, message: ['SubCategory not found'] })
         }
         try {
-          const [result, metadata] = await sequelize.query('insert event_has_subcategory values( ? , ? )',
-            { replacements: [req.params.id, req.body.idSubCategory] })
-          console.log(metadata)
-          if (result.affectedRows === 0) {
-            return res.status(409).json({ errors: ['subCategory already exist'], success: false, message: ['subCategory already exist'] })
-          }
-          return res.status(200).json({ data: null, success: true, message: ['Tag added successfuly'] })
+          subCategory.addEvent(event).then((event) => {
+            if (!event) {
+              return res.status(409).json({ errors: ['subCategory  alredy exist '], success: false, message: ['subCategory already exist'] })
+            }
+            return res.status(200).json({ data: event, success: true, message: ['subCategory added successfuly'] })
+          })
         } catch (err) {
-          return res.status(409).json({ errors: ['subCategory  alredy exist '], success: false, message: ['subCategory already exist'] })
+          return res.status(409).json({ errors: [err], success: false, message: 'err' })
         }
       })
     })
