@@ -55,8 +55,8 @@ exports.validate = (method) => {
       return [
         param('id')
           .isInt(),
-        body('idSubCategory')
-          .isLength({ min: 1 })
+        param('idSubCategory')
+          .isInt()
       ]
     }
     case 'updateImage' : {

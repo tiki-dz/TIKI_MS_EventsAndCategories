@@ -12,7 +12,7 @@ router.delete('/event/:id', validation.validate('deleteEvent'), eventController.
 router.post('/event/:id/tag', validation.validate('addTagToEvent'), eventController.addTagToEvent)
 router.post('/event/:id/subcategory', validation.validate('addSubCategoryToEvent'), eventController.addSubCategory)
 router.delete('/event/:id/tag', validation.validate('addTagToEvent'), eventController.deleteTag)
-router.delete('/event/:id/subcategory', validation.validate('deleteSubCategory'), eventController.deleteSubcategory)
+router.delete('/event/:id/subcategory/:idSubCategory', validation.validate('deleteSubCategory'), eventController.deleteSubcategory)
 router.patch('/event/:id', validation.validate('deleteEvent'), eventController.patchEvent)
 router.put('/event/:id/updateImage', validation.validate('updateImage'), eventController.updateImageTicket)
 

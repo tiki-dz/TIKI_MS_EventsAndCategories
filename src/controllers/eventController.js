@@ -375,7 +375,7 @@ const deleteSubcategory = async (req, res) => {
   }
   try {
     const [result] = await sequelize.query('delete from event_has_subcategory where EventIdEvent = ? and SubCategoryIdSubCategory = ?',
-      { replacements: [req.params.id, req.body.idSubCategory] })
+      { replacements: [req.params.id, req.params.idSubCategory] })
     if (result.affectedRows === 0) {
       return res.status(404).json({ errors: ['Subcategory  dont exists'], success: false, message: ['Subcategory  d"ont exist '] })
     }
