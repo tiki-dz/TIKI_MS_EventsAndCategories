@@ -35,6 +35,14 @@ exports.validate = (method) => {
           .isInt()
       ]
     }
+    case 'deleteTagToEvent' : {
+      return [
+        param('id')
+          .isInt(),
+        param('name')
+          .isLength({ min: 1 })
+      ]
+    }
     case 'addTagToEvent' : {
       return [
         param('id')

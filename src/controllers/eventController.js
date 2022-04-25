@@ -351,7 +351,7 @@ const deleteTag = async (req, res) => {
   }
   try {
     const [result] = await sequelize.query('delete from event_has_tag where EventIdEvent = ? and TagName = ?',
-      { replacements: [req.params.id, req.body.name] })
+      { replacements: [req.params.id, req.params.name] })
     if (result.affectedRows === 0) {
       return res.status(404).json({ errors: ['tags dont exists'], success: false, message: ['tags d"ont exist '] })
     }
