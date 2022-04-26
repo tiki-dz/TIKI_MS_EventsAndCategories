@@ -199,7 +199,7 @@ async function deleteSubCategory (req, res) {
             return res.status(500).send({ success: false, message: 'subCategory is not Empty!' })
           }
         }
-        // SubCategory.destroy()
+        SubCategory.destroy()
         return res.status(200).send({ success: true, message: 'category deleted successfully' })
       } else {
         res.status(422).send({ success: false, message: 'Category Not found!' })
