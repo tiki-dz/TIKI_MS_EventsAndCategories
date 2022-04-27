@@ -35,6 +35,14 @@ exports.validate = (method) => {
           .isInt()
       ]
     }
+    case 'deleteTagToEvent' : {
+      return [
+        param('id')
+          .isInt(),
+        param('name')
+          .isLength({ min: 1 })
+      ]
+    }
     case 'addTagToEvent' : {
       return [
         param('id')
@@ -55,8 +63,8 @@ exports.validate = (method) => {
       return [
         param('id')
           .isInt(),
-        body('idSubCategory')
-          .isLength({ min: 1 })
+        param('idSubCategory')
+          .isInt()
       ]
     }
     case 'updateImage' : {
