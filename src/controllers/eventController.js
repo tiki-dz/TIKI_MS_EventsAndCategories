@@ -145,12 +145,13 @@ const getAllEvents = async (req, res) => {
   const { page, size, search, tag, category } = req.query
   const condition = !search ? null : { [Op.or]: [{ name: { [Op.like]: `%${search}%` } }, { description: { [Op.like]: `%${search}%` } }, { organiser: { [Op.like]: `%${search}%` } }] }
   const conditionTag = !tag ? null : { tagName: { [Op.like]: `%${tag}%` } }
-  const conditionCategory = !category ? null : { name: { [Op.like]: `%${category}%` } }
+  const conditionCategory = !category ? null : { name: { [Op.eq]: `${category}` } }
   const { limit, offset } = getPagination(page, size)
 
   const total = await Event.count({ where: condition, limit: limit, offset: offset })
   Event.findAndCountAll({
     where: condition,
+    order: sequelize.random(),
     limit,
     offset,
     include: [{
