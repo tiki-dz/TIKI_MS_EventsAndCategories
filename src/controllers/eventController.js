@@ -151,6 +151,7 @@ const getAllEvents = async (req, res) => {
   const total = await Event.count({ where: condition, limit: limit, offset: offset })
   Event.findAndCountAll({
     where: condition,
+    order: sequelize.random(),
     limit,
     offset,
     include: [{
