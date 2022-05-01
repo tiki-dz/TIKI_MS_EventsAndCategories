@@ -6,6 +6,7 @@ const cookieParser = require('cookie-parser')
 const logger = require('morgan')
 const indexRouter = require('./routes/indexRoutes')
 const fileUpload = require('express-fileupload')
+const test = require('./utils')
 // const usersRouter = require("./routes/users");
 // const Account = require("./models/Account");
 // const User = require("./models/User");
@@ -40,7 +41,7 @@ app.get('/Upload/*:filename*', (req, res) => {
 // })
 
 app.use(bodyParser.urlencoded({ extended: true }))
-
+test.CreatChannel1()
 // parse application/json
 app.use(bodyParser.json())
 app.listen(5002)
