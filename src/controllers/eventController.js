@@ -174,6 +174,19 @@ const getAllEvents = async (req, res) => {
       res.send({ ...response, success: true })
     })
 }
+async function getByIdEvent (req, res) {
+  try {
+    const id = parseInt(req.params.id)
+    const event = await Event.findByPk(id)
+    if (event !== null) {
+      return res.status(200).send({ data: event, success: true })
+    } else {
+      res.status(422).send({ success: false, message: 'Event Not found!' })
+    }
+  } catch (error) {
+    res.status(500).send({ errors: error.toString(), success: false, message: 'processing err' })
+  }
+}
 const deleteEvent = (req, res) => {
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
@@ -548,4 +561,4 @@ const getPagination = (page, size) => {
   const offset = page ? page * limit : 0
   return { limit, offset }
 }
-module.exports = { addEvent, getAllEvents, deleteEvent, deleteTag, deleteSubcategory, addTagToEvent, addSubCategory, patchEvent, updateImageTicket }
+module.exports = { addEvent, getAllEvents, getByIdEvent, deleteEvent, deleteTag, deleteSubcategory, addTagToEvent, addSubCategory, patchEvent, updateImageTicket }
