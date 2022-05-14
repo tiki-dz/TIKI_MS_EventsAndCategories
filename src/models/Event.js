@@ -32,15 +32,15 @@ module.exports = (sequelize, DataTypes) => {
     },
     eventImage: {
       allowNull: false,
-      type: DataTypes.STRING(255)
+      type: DataTypes.TEXT
     },
     ticketImage: {
       allowNull: false,
-      type: DataTypes.STRING(255)
+      type: DataTypes.TEXT
     },
     outherImage: {
       allowNull: false,
-      type: DataTypes.STRING(255)
+      type: DataTypes.TEXT
     },
     externalUrls: {
       allowNull: false,

@@ -2,7 +2,7 @@
 const { validationResult } = require('express-validator/check')
 const { SubCategory, Tag, Event, sequelize, Category } = require('../models')
 const Op = require('Sequelize').Op
-const fs = require('fs')
+const upload = require('../util/upload')
 const addEvent = (req, res, next) => {
   try {
     console.log(req.body)
@@ -83,49 +83,43 @@ const addEvent = (req, res, next) => {
       })
 
       addTagsPromisses.then(function (value) {
-        const urlOutherImage = '/Upload/outherImage/' + Date.now().toString().trim() + '1.' + req.files.outherImage.mimetype.split('/')[1]
-        const urlTicketImage = '/Upload/ticketImage/' + Date.now().toString().trim() + '2.' + req.files.ticketImage.mimetype.split('/')[1]
-        const urlEventImage = '/Upload/eventImage/' + Date.now().toString().trim() + '3.' + req.files.eventImage.mimetype.split('/')[1]
-        req.files.outherImage.mv(
-          '.' + urlOutherImage
-        )
-        req.files.ticketImage.mv(
-          '.' + urlTicketImage
-        )
-        req.files.eventImage.mv(
-          '.' + urlEventImage
-        )
-        Event.create({
-          name: req.body.name,
-          description: req.body.description,
-          organiser: req.body.organiser,
-          startDate: req.body.startDate,
-          endDate: req.body.endDate,
-          address: req.body.address,
-          price: req.body.price,
-          justForWomen: req.body.justForWomen,
-          eventImage: 'http://localhost:5002' + urlEventImage,
-          ticketImage: 'http://localhost:5002' + urlTicketImage,
-          outherImage: 'http://localhost:5002' + urlOutherImage,
-          externalUrls: req.body.externalUrls,
-          ticketNb: req.body.ticketNb
-        }).then((event) => {
-          event.addSubCategory(subcategories).then((result) => {
-            event.setTags(tags).then((result) => {
-              Event.findOne({
-                include: [{
-                  model: Tag
-                }, {
-                  model: SubCategory
-                  // specifies how we want to be able to access our joined rows on the returned data
-                }
-                  // specifies how we want to be able to access our joined rows on the returned data
-                ],
-                where: {
-                  idEvent: event.idEvent
-                }
-              }).then(event => {
-                return res.send(event)
+        upload(req.files.outherImage.data).then((outherImageUrl) => {
+          upload(req.files.ticketImage.data).then((ticketImageUrl) => {
+            upload(req.files.eventImage.data).then((eventImageUrl) => {
+              Event.create({
+                name: req.body.name,
+                description: req.body.description,
+                organiser: req.body.organiser,
+                startDate: req.body.startDate,
+                endDate: req.body.endDate,
+                address: req.body.address,
+                price: req.body.price,
+                justForWomen: req.body.justForWomen,
+                eventImage: eventImageUrl,
+                ticketImage: ticketImageUrl,
+                outherImage: outherImageUrl,
+                externalUrls: req.body.externalUrls,
+                ticketNb: req.body.ticketNb
+              }).then((event) => {
+                event.addSubCategory(subcategories).then((result) => {
+                  event.setTags(tags).then((result) => {
+                    Event.findOne({
+                      include: [{
+                        model: Tag
+                      }, {
+                        model: SubCategory
+                        // specifies how we want to be able to access our joined rows on the returned data
+                      }
+                        // specifies how we want to be able to access our joined rows on the returned data
+                      ],
+                      where: {
+                        idEvent: event.idEvent
+                      }
+                    }).then(event => {
+                      return res.send(event)
+                    })
+                  })
+                })
               })
             })
           })
@@ -147,7 +141,6 @@ const getAllEvents = async (req, res) => {
   const conditionTag = !tag ? null : { tagName: { [Op.like]: `%${tag}%` } }
   const conditionCategory = !category ? null : { name: { [Op.eq]: `${category}` } }
   const { limit, offset } = getPagination(page, size)
-
   const total = await Event.count({ where: condition, limit: limit, offset: offset })
   Event.findAndCountAll({
     where: condition,
@@ -276,19 +269,15 @@ const updateImageTicket = (req, res) => {
         })
       }
       if (req.body.imageType === 'outherImage') {
-        const imageUrl = event1.outherImage
         try {
-          fs.unlinkSync('./Upload' + imageUrl.split('/Upload')[1])
-          const url = '/Upload/outherImage/' + Date.now().toString().trim() + '.' + req.files.image.mimetype.split('/')[1]
-          req.files.image.mv(
-            '.' + url
-          )
-          event1.outherImage = 'http://localhost:5002' + url
-          event1.save().then((event1) => {
-            return res.status(200).json({
-              message: 'update successfully',
-              success: true,
-              data: event1
+          upload(req.files.image.data).then((url) => {
+            event1.outherImage = url
+            event1.save().then((event1) => {
+              return res.status(200).json({
+                message: 'update successfully',
+                success: true,
+                data: event1
+              })
             })
           })
         } catch (err) {
@@ -299,19 +288,15 @@ const updateImageTicket = (req, res) => {
           })
         }
       } else if (req.body.imageType === 'ticketImage') {
-        const imageUrl = event1.ticketImage
         try {
-          fs.unlinkSync('./Upload' + imageUrl.split('/Upload')[1])
-          const url = '/Upload/ticketImage/' + Date.now().toString().trim() + '.' + req.files.image.mimetype.split('/')[1]
-          req.files.image.mv(
-            '.' + url
-          )
-          event1.ticketImage = 'http://localhost:5002' + url
-          event1.save().then((event1) => {
-            return res.status(200).json({
-              message: 'update successfully',
-              success: true,
-              data: event1
+          upload(req.files.image.data).then((url) => {
+            event1.ticketImage = url
+            event1.save().then((event1) => {
+              return res.status(200).json({
+                message: 'update successfully',
+                success: true,
+                data: event1
+              })
             })
           })
         } catch (err) {
@@ -322,19 +307,15 @@ const updateImageTicket = (req, res) => {
           })
         }
       } else {
-        const imageUrl = event1.eventImage
         try {
-          fs.unlinkSync('./Upload' + imageUrl.split('/Upload')[1])
-          const url = '/Upload/eventImage/' + Date.now().toString().trim() + '.' + req.files.image.mimetype.split('/')[1]
-          req.files.image.mv(
-            '.' + url
-          )
-          event1.eventImage = 'http://localhost:5002' + url
-          event1.save().then((event1) => {
-            return res.status(200).json({
-              message: 'update successfully',
-              success: true,
-              data: event1
+          upload(req.files.image.data).then((url) => {
+            event1.eventImage = url
+            event1.save().then((event1) => {
+              return res.status(200).json({
+                message: 'update successfully',
+                success: true,
+                data: event1
+              })
             })
           })
         } catch (err) {
