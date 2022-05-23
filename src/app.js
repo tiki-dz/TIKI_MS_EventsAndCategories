@@ -41,7 +41,7 @@ app.get('/Upload/*:filename*', (req, res) => {
 // })
 
 app.use(bodyParser.urlencoded({ extended: true }))
-test.CreatChannel1()
+test.CreatChannel()
 // parse application/json
 app.use(bodyParser.json())
 app.listen(5002)
