@@ -1,8 +1,11 @@
 /* eslint-disable prefer-const */
 const { validationResult } = require('express-validator/check')
 const { SubCategory, Tag, Event, sequelize, Category } = require('../models')
+const rabbitMq = require('../utils')
+const { STATISTIC_BINDING_KEY } = require('../config/config.js')
 const Op = require('Sequelize').Op
 const fs = require('fs')
+
 const addEvent = (req, res, next) => {
   try {
     console.log(req.body)
@@ -125,6 +128,12 @@ const addEvent = (req, res, next) => {
                   idEvent: event.idEvent
                 }
               }).then(event => {
+                // send event to rabbitMq
+                const channel = rabbitMq.channel
+                const payload = { subCategoryArray: event.SubCategories }
+                const message = [{ event: 'ADD-EVENT', payload: payload }]
+                rabbitMq.PublishMessage(channel, STATISTIC_BINDING_KEY, message)
+
                 return res.send(event)
               })
             })
@@ -198,6 +207,12 @@ const deleteEvent = (req, res) => {
       ]
     }).then(event1 => {
       if (!event1) {
+        // send event to rabbitMq
+        const channel = rabbitMq.channel
+        const payload = { subCategoryArray: event1.SubCategories }
+        const message = [{ event: 'DELETE-EVENT', payload: payload }]
+        rabbitMq.PublishMessage(channel, STATISTIC_BINDING_KEY, message)
+
         return res.status(404).json({
           errors: ['event dont exist'],
           success: false,
@@ -380,6 +395,13 @@ const deleteSubcategory = async (req, res) => {
     if (result.affectedRows === 0) {
       return res.status(404).json({ errors: ['Subcategory  dont exists'], success: false, message: ['Subcategory  d"ont exist '] })
     }
+    // send event to rabbitMq
+    const channel = rabbitMq.channel
+    const subCategory = SubCategory.findByPk(req.params.idSubCategory)
+    const payload = { subCategoryName: subCategory.name }
+    const message = [{ event: 'DELETE-EVENT-FROM-SUBCATEGORY', payload: payload }]
+    rabbitMq.PublishMessage(channel, STATISTIC_BINDING_KEY, message)
+
     return res.status(200).json({ data: null, success: true, message: ['Subcategory delete successfuly'] })
   } catch (err) {
     return res.status(500).json({
@@ -470,13 +492,19 @@ const addSubCategory = async (req, res) => {
         }
       }).then(async (subCategory) => {
         if (!subCategory) {
-          return res.status(404).json({ data: null, success: true, message: ['SubCategory not found'] })
+          return res.status(404).json({ data: null, success: false, message: ['SubCategory not found'] })
         }
         try {
           subCategory.addEvent(event).then((event) => {
             if (!event) {
               return res.status(409).json({ errors: ['subCategory  alredy exist '], success: false, message: ['subCategory already exist'] })
             }
+            // send event to rabbitMq
+            const channel = rabbitMq.channel
+            const payload = { subCategoryName: SubCategory.name }
+            const message = [{ event: 'ADD-EVENT-TO-SUBCATEGORY', payload: payload }]
+            rabbitMq.PublishMessage(channel, STATISTIC_BINDING_KEY, message)
+
             return res.status(200).json({ data: event, success: true, message: ['subCategory added successfuly'] })
           })
         } catch (err) {
