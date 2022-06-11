@@ -1,11 +1,15 @@
 // const { sequelize } = require('./models')
 // const createError = require("http-errors")
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config()
+}
 const express = require('express')
 const path = require('path')
 const cookieParser = require('cookie-parser')
 const logger = require('morgan')
 const indexRouter = require('./routes/indexRoutes')
 const fileUpload = require('express-fileupload')
+const eurekaHelper = require('./eurekaHelper/eurekaHelper.js')
 // const usersRouter = require("./routes/users");
 // const Account = require("./models/Account");
 // const User = require("./models/User");
@@ -40,9 +44,10 @@ app.get('/Upload/*:filename*', (req, res) => {
 // })
 
 app.use(bodyParser.urlencoded({ extended: true }))
-
+eurekaHelper.registerWithEureka('service-event', process.env.PORT)
 // parse application/json
 app.use(bodyParser.json())
-app.listen(5002)
+console.log(process.env.PORT)
+app.listen(process.env.PORT)
 module.exports = app
 console.log('server start on port 5002')
