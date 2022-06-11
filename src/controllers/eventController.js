@@ -207,12 +207,6 @@ const deleteEvent = (req, res) => {
       ]
     }).then(event1 => {
       if (!event1) {
-        // send event to rabbitMq
-        const channel = rabbitMq.channel
-        const payload = { subCategoryArray: event1.SubCategories }
-        const message = [{ event: 'DELETE-EVENT', payload: payload }]
-        rabbitMq.PublishMessage(channel, STATISTIC_BINDING_KEY, message)
-
         return res.status(404).json({
           errors: ['event dont exist'],
           success: false,
@@ -222,6 +216,11 @@ const deleteEvent = (req, res) => {
       event1.removeTags(event1.Tags)
       event1.removeSubCategories(event1.SubCategories)
       event1.destroy().then((event) => {
+        // send event to rabbitMq
+        const channel = rabbitMq.channel
+        const payload = { subCategoryArray: event1.SubCategories }
+        const message = [{ event: 'DELETE-EVENT', payload: payload }]
+        rabbitMq.PublishMessage(channel, STATISTIC_BINDING_KEY, message)
         return res.send({ success: true, message: 'event added success', data: event })
       })
     })
