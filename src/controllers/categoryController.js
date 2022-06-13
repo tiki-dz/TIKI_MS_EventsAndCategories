@@ -1,6 +1,6 @@
-const { default: axios } = require('axios')
 const { validationResult } = require('express-validator')
 const { Category, SubCategory } = require('../models')
+const { checkTokenAdmin } = require('../util/checkToken')
 
 // ***********************************************************
 const getPagingData = (data, page, limit) => {
@@ -57,15 +57,11 @@ async function updateCategory (req, res) {
     const data = req.body
     const token = req.headers['x-access-token']
 
-    const response = await axios.get('http://localhost:5001/api/tokenCheck', {
-      headers: {
-        'x-access-token': token,
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Headers': 'x-access-token'
-      }
-    })
-    console.log(response.data.success)
-    if (response.data.success) {
+    const response = await checkTokenAdmin(token)
+    // nconsole.log(response)
+    // console.log(response.data.success)
+    // console.log(data)
+    if (response.success) {
       const category = await Category.findByPk(data.idCategory)
       if (category !== null) {
         category.name = (data.name == null) ? category.name : data.name
@@ -116,14 +112,8 @@ async function getByIdCategories (req, res) {
 async function deleteCategory (req, res) {
   try {
     const token = req.headers['x-access-token']
-    const response = await axios.get('http://localhost:5001/api/tokenCheck', {
-      headers: {
-        'x-access-token': token,
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Headers': 'x-access-token'
-      }
-    })
-    if (response.data.success) {
+    const response = await checkTokenAdmin(token)
+    if (response.success) {
       const id = parseInt(req.params.id)
       const category = await Category.findByPk(id)
       if (category !== null) {
