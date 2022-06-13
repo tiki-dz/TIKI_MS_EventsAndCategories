@@ -4,6 +4,8 @@ const { SubCategory } = require('../models')
 const { sequelize } = require('../models')
 const { Category } = require('../models')
 const { QueryTypes } = require('sequelize')
+const rabbitMq = require('../utils')
+const { STATISTIC_BINDING_KEY } = require('../config/config.js')
 
 // ***********************************************************
 const getPagingData = (data, page, limit) => {
@@ -49,6 +51,13 @@ async function addSubCategory (req, res) {
           icon: data.icon,
           CategoryIdCategory: data.idCategory
         })
+
+        // send event to rabbitMq
+        const channel = rabbitMq.channel
+        const payload = { subCategoryName: data.name, categoryName: category.name }
+        const message = [{ event: 'ADD-SUBCATEGORY', payload: payload }]
+        rabbitMq.PublishMessage(channel, STATISTIC_BINDING_KEY, message)
+
         return res.status(200).send({ data: subCategory, success: true, message: 'one SubCategory added successfully' })
       } else {
         return res.status(422).send({ success: false, message: 'category dont exist' })
@@ -110,6 +119,14 @@ async function updateSubCategory (req, res) {
           subCategory.icon = (data.icon == null) ? subCategory.icon : data.icon
           subCategory.CategoryIdCategory = (data.idCategory == null) ? subCategory.CategoryIdCategory : data.idCategory
           await subCategory.save()
+
+          // send event to rabbitMq
+          const channel = rabbitMq.channel
+          const category = await Category.findByPk(subCategory.CategoryIdCategory)
+          const payload = { subCategoryName: subCategory.name, categoryName: category.name }
+          const message = [{ event: 'UPDATE-SUBCATEGORY', payload: payload }]
+          rabbitMq.PublishMessage(channel, STATISTIC_BINDING_KEY, message)
+
           return res.status(200).send({ data: subCategory, success: true, message: 'one SubCategory updated successfully' })
         }
       } else {

@@ -9,6 +9,7 @@ const cookieParser = require('cookie-parser')
 const logger = require('morgan')
 const indexRouter = require('./routes/indexRoutes')
 const fileUpload = require('express-fileupload')
+const rabbitmq = require('./utils')
 const eurekaHelper = require('./eurekaHelper/eurekaHelper.js')
 // const usersRouter = require("./routes/users");
 // const Account = require("./models/Account");
@@ -44,6 +45,7 @@ app.get('/Upload/*:filename*', (req, res) => {
 // })
 
 app.use(bodyParser.urlencoded({ extended: true }))
+rabbitmq.CreatChannel()
 eurekaHelper.registerWithEureka('service-event', process.env.PORT)
 // parse application/json
 app.use(bodyParser.json())
