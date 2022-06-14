@@ -1,6 +1,6 @@
 /* eslint-disable prefer-const */
 const { validationResult } = require('express-validator/check')
-const { SubCategory, Tag, Event, sequelize } = require('../models')
+const { SubCategory, Tag, Event, sequelize, Category } = require('../models')
 const rabbitMq = require('../utils')
 const { STATISTIC_BINDING_KEY } = require('../config/config.js')
 const Op = require('sequelize').Op
@@ -153,9 +153,18 @@ const getAllEvents = async (req, res) => {
     : { CategoryIdCategory: { [Op.eq]: `${category}` } }
   const { limit, offset } = getPagination(page, size)
   Event.findAndCountAll({
-    where: condition,
+    where: {
+      ...condition,
+      endDate: {
+        [Op.gte]: Date()
+      }
+    },
     limit,
     offset,
+    order: [
+    // Will escape title and validate DESC against a list of valid direction parameters
+      ['startDate', 'ASC']
+    ],
     distinct: true,
     include: [
       {
@@ -164,7 +173,10 @@ const getAllEvents = async (req, res) => {
       },
       {
         model: SubCategory,
-        where: conditionCategory
+        where: conditionCategory,
+        include: [{
+          model: Category
+        }]
       }
     ]
   }).then((data) => {
