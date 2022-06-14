@@ -8,6 +8,7 @@ const validationAdmin = require('../validation/validationAdmin')
 
 router.post('/event', validation.validate('addEvent'), eventController.addEvent)
 router.get('/event', eventController.getAllEvents)
+router.get('/event2', eventController.getAllEvents2)
 router.get('/event/:id', eventController.getByIdEvent)
 router.post('/event/:id', eventController.editByIdEvent)
 router.delete('/event/:id', validation.validate('deleteEvent'), eventController.deleteEvent)
