@@ -1,4 +1,4 @@
-const { sequelize } = require('./models')
+// const { sequelize } = require('./models')
 // const createError = require("http-errors")
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config()
@@ -40,9 +40,9 @@ app.get('/Upload/*:filename*', (req, res) => {
     path.join(__dirname, '../Upload', req.path.substring(8, req.path.length))
   )
 })
-sequelize.query('SET FOREIGN_KEY_CHECKS = 0').then(function () {
-  sequelize.sync({ force: false, alter: true })
-})
+// sequelize.query('SET FOREIGN_KEY_CHECKS = 0').then(function () {
+//   sequelize.sync({ force: false, alter: true })
+// })
 
 app.use(bodyParser.urlencoded({ extended: true }))
 rabbitmq.CreatChannel()
