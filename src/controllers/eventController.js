@@ -1,9 +1,9 @@
 /* eslint-disable prefer-const */
 const { validationResult } = require('express-validator/check')
-const { SubCategory, Tag, Event, sequelize } = require('../models')
+const { SubCategory, Tag, Event, sequelize, Category } = require('../models')
 const rabbitMq = require('../utils')
 const { STATISTIC_BINDING_KEY } = require('../config/config.js')
-const Op = require('Sequelize').Op
+const Op = require('sequelize').Op
 // const fs = require('fs')
 
 const upload = require('../util/upload')
@@ -153,9 +153,18 @@ const getAllEvents = async (req, res) => {
     : { CategoryIdCategory: { [Op.eq]: `${category}` } }
   const { limit, offset } = getPagination(page, size)
   Event.findAndCountAll({
-    where: condition,
+    where: {
+      ...condition,
+      endDate: {
+        [Op.gte]: Date()
+      }
+    },
     limit,
     offset,
+    order: [
+    // Will escape title and validate DESC against a list of valid direction parameters
+      ['startDate', 'ASC']
+    ],
     distinct: true,
     include: [
       {
@@ -164,7 +173,48 @@ const getAllEvents = async (req, res) => {
       },
       {
         model: SubCategory,
-        where: conditionCategory
+        where: conditionCategory,
+        include: [{
+          model: Category
+        }]
+      }
+    ]
+  }).then((data) => {
+    console.log(data.count, 'hhh')
+    const response = getPagingData(data, page, limit)
+    res.send({ ...response, success: true })
+  })
+}
+const getAllEvents2 = async (req, res) => {
+  const { page, size, search, tag, category } = req.query
+  const condition = !search ? null : { [Op.or]: [{ name: { [Op.like]: `%${search}%` } }, { description: { [Op.like]: `%${search}%` } }, { organiser: { [Op.like]: `%${search}%` } }] }
+  const conditionTag = !tag ? null : { name: { [Op.like]: `%${tag}%` } }
+  const conditionCategory = !category
+    ? null
+    : { CategoryIdCategory: { [Op.eq]: `${category}` } }
+  const { limit, offset } = getPagination(page, size)
+  Event.findAndCountAll({
+    where: {
+      ...condition
+    },
+    limit,
+    offset,
+    order: [
+    // Will escape title and validate DESC against a list of valid direction parameters
+      ['startDate', 'ASC']
+    ],
+    distinct: true,
+    include: [
+      {
+        model: Tag,
+        where: conditionTag
+      },
+      {
+        model: SubCategory,
+        where: conditionCategory,
+        include: [{
+          model: Category
+        }]
       }
     ]
   }).then((data) => {
@@ -585,4 +635,17 @@ const getPagination = (page, size) => {
   const offset = page ? page * limit : 0
   return { limit, offset }
 }
-module.exports = { addEvent, getAllEvents, getByIdEvent, deleteEvent, deleteTag, deleteSubcategory, addTagToEvent, addSubCategory, patchEvent, updateImageTicket, editByIdEvent }
+module.exports = {
+  addEvent,
+  getAllEvents,
+  getByIdEvent,
+  deleteEvent,
+  deleteTag,
+  deleteSubcategory,
+  addTagToEvent,
+  addSubCategory,
+  patchEvent,
+  updateImageTicket,
+  editByIdEvent,
+  getAllEvents2
+}
