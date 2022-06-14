@@ -154,7 +154,6 @@ const getAllEvents = async (req, res) => {
   const { limit, offset } = getPagination(page, size)
   Event.findAndCountAll({
     where: condition,
-    order: sequelize.random(),
     limit,
     offset,
     distinct: true,
