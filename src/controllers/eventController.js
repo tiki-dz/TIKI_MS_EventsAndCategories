@@ -1,6 +1,6 @@
 /* eslint-disable prefer-const */
 const { validationResult } = require('express-validator/check')
-const { SubCategory, Tag, Event, sequelize, Category } = require('../models')
+const { SubCategory, Tag, Event, sequelize } = require('../models')
 const rabbitMq = require('../utils')
 const { STATISTIC_BINDING_KEY } = require('../config/config.js')
 const Op = require('Sequelize').Op
@@ -147,34 +147,31 @@ const addEvent = (req, res, next) => {
 const getAllEvents = async (req, res) => {
   const { page, size, search, tag, category } = req.query
   const condition = !search ? null : { [Op.or]: [{ name: { [Op.like]: `%${search}%` } }, { description: { [Op.like]: `%${search}%` } }, { organiser: { [Op.like]: `%${search}%` } }] }
-  const conditionTag = !tag ? null : { tagName: { [Op.like]: `%${tag}%` } }
-  const conditionCategory = !category ? null : { name: { [Op.eq]: `${category}` } }
+  const conditionTag = !tag ? null : { name: { [Op.like]: `%${tag}%` } }
+  const conditionCategory = !category
+    ? null
+    : { CategoryIdCategory: { [Op.eq]: `${category}` } }
   const { limit, offset } = getPagination(page, size)
-  const total = await Event.count({ where: condition, limit: limit, offset: offset })
   Event.findAndCountAll({
     where: condition,
-    order: sequelize.random(),
     limit,
     offset,
-    include: [{
-      model: Tag,
-      through: {
+    distinct: true,
+    include: [
+      {
+        model: Tag,
         where: conditionTag
-      }
-    },
-    {
-      model: SubCategory,
-      include: [{
-        model: Category,
+      },
+      {
+        model: SubCategory,
         where: conditionCategory
-      }]
-    }]
+      }
+    ]
+  }).then((data) => {
+    console.log(data.count, 'hhh')
+    const response = getPagingData(data, page, limit)
+    res.send({ ...response, success: true })
   })
-    .then(data => {
-      data.count = total
-      const response = getPagingData(data, page, limit)
-      res.send({ ...response, success: true })
-    })
 }
 async function getByIdEvent (req, res) {
   try {
