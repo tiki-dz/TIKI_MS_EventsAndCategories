@@ -3,7 +3,7 @@ const { validationResult } = require('express-validator/check')
 const { SubCategory, Tag, Event, sequelize } = require('../models')
 const rabbitMq = require('../utils')
 const { STATISTIC_BINDING_KEY } = require('../config/config.js')
-const Op = require('Sequelize').Op
+const Op = require('sequelize').Op
 // const fs = require('fs')
 
 const upload = require('../util/upload')

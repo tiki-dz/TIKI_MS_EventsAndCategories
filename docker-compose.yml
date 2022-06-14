@@ -1,0 +1,64 @@
+version: '3'
+services:
+  eureka-server:
+    image: ms-registry
+    ports:
+      - 8761:8761≈
+  gateway-service:
+     image: gateway
+     depends_on:
+        - eureka-server
+     ports:
+       - 7777:7777
+     environment:
+        profile: "default"
+        eureka.client.serviceUrl.defaultZone: "http://eureka-server:8761/eureka"  
+     restart: on-failure
+
+  ms-auth-service:
+     image: ms-auth
+     depends_on:
+        - eureka-server
+        - gateway-service
+     ports:
+       - 5001:5001
+     environment:
+        profile: "default"
+        eureka.client.serviceUrl.defaultZone: "http://eureka-server:8761/eureka"  
+     restart: on-failure   
+
+  ms-event-service:
+     image: ms-event
+     depends_on:
+        - eureka-server
+        - gateway-service
+     ports:
+       - 5002:5002
+     environment:
+        profile: "default"
+        eureka.client.serviceUrl.defaultZone: "http://eureka-server:8761/eureka"  
+     restart: on-failure
+
+  ms-stat-service:
+     image: ms-stat
+     depends_on:
+        - eureka-server
+        - gateway-service
+     ports:
+       - 5004:5004
+     environment:
+        profile: "default"
+        eureka.client.serviceUrl.defaultZone: "http://eureka-server:8761/eureka"  
+     restart: on-failure
+
+  ms-purshase-service:
+     image: ms-purshase
+     depends_on:
+        - eureka-server
+        - gateway-service
+     ports:
+       - 5003:5003
+     environment:
+        profile: "default"
+        eureka.client.serviceUrl.defaultZone: "http://eureka-server:8761/eureka"  
+     restart: on-failure       
