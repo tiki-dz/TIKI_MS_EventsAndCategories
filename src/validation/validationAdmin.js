@@ -7,16 +7,12 @@ exports.validate = (method) => {
     case 'addCategory': {
       return [
         body('name')
-          .matches(/^[A-Za-z\s]+$/)
-          .withMessage('Name must be alphabetic.')
           .isLength({ min: 3 })
       ]
     }
     case 'addSubCategory': {
       return [
         body('name')
-          .matches(/^[A-Za-z\s]+$/)
-          .withMessage('Name must be alphabetic.')
           .isLength({ min: 3 })
       ]
     }
