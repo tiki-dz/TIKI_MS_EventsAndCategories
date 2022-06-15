@@ -23,15 +23,22 @@ const getPagination = (page, size) => {
 
 async function addSubCategory (req, res) {
   // check if data is validated
-  const errors = validationResult(req) // Finds the validation errors in this request and wraps them in an object with handy functions
+  const errors = validationResult(req)
+  // Finds the validation errors in this request and wraps them in an object with handy functions
+  console.log(errors)
   if (!errors.isEmpty()) {
-    res.status(422).json({ errors: errors.array(), success: false, message: 'invalid data' })
-    return
+    return res
+      .status(422)
+      .json({
+        errors: errors.array(),
+        success: false,
+        message: 'invalid data'
+      })
   }
   try {
     const data = req.body
     let category = await Category.findByPk(data.idCategory)
-    if (!category) { res.status(422).send({ success: false, message: 'Category Not found!' }) }
+    if (!category) { return res.status(404).send({ success: false, message: 'Category Not found!' }) }
     const subCategory = await SubCategory.findOne({
       where: {
         name: data.name
@@ -51,13 +58,11 @@ async function addSubCategory (req, res) {
           icon: data.icon,
           CategoryIdCategory: data.idCategory
         })
-
         // send event to rabbitMq
         const channel = rabbitMq.channel
         const payload = { subCategoryName: data.name, categoryName: category.name }
         const message = [{ event: 'ADD-SUBCATEGORY', payload: payload }]
         rabbitMq.PublishMessage(channel, STATISTIC_BINDING_KEY, message)
-
         return res.status(200).send({ data: subCategory, success: true, message: 'one SubCategory added successfully' })
       } else {
         return res.status(422).send({ success: false, message: 'category dont exist' })
@@ -202,7 +207,8 @@ async function deleteSubCategory (req, res) {
       headers: {
         'x-access-token': token,
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Headers': 'x-access-token'
+        'Access-Control-Allow-Headers': 'x-access-token',
+        role: 'admin'
       }
     })
     if (response.data.success) {
