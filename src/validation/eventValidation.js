@@ -18,8 +18,8 @@ exports.validate = (method) => {
           .matches(/^[A-Za-z\s]+$/)
           .withMessage('organiser must be alphabetic.')
           .isLength({ min: 3 }),
-        body('startDate').isDate(),
-        body('endDate').isDate(),
+        body('startDate').isLength({ min: 1 }),
+        body('endDate').isLength({ min: 1 }),
         body('address')
           .isLength({ min: 3 }),
         body('externalUrls')
