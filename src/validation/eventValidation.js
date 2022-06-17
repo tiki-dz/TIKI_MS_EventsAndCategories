@@ -7,16 +7,10 @@ exports.validate = (method) => {
         body('justForWomen').isBoolean(),
         body('price').isNumeric(),
         body('name')
-          .matches(/^[A-Za-z\s]+$/)
-          .withMessage('Name must be alphabetic.')
           .isLength({ min: 3 }),
         body('description')
-          .matches(/^[A-Za-z\s]+$/)
-          .withMessage('Name must be alphabetic.')
           .isLength({ min: 3 }),
         body('organiser')
-          .matches(/^[A-Za-z\s]+$/)
-          .withMessage('organiser must be alphabetic.')
           .isLength({ min: 3 }),
         body('startDate').isLength({ min: 1 }),
         body('endDate').isLength({ min: 1 }),
@@ -24,7 +18,6 @@ exports.validate = (method) => {
           .isLength({ min: 3 }),
         body('externalUrls')
           .isLength({ min: 3 }),
-
         body('ticketNb')
           .isInt({ min: 1 })
       ]
